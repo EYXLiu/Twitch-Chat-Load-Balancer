@@ -1,17 +1,31 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"log"
+	"tc/internal/config"
+	"tc/internal/stream"
+	"tc/internal/twitch"
 )
 
 func main() {
-	r := gin.Default()
+	cfg := config.Load()
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+	client, err := twitch.Connect()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client.Join(cfg.TwitchChannel)
+
+	log.Println("Connected to twitch chat")
+
+	client.Listen(func(raw string) {
+		event, err := stream.DecodeIRCMessage(raw)
+		if err != nil {
+			log.Println("error:", err)
+			return
+		}
+
+		log.Println(event.Channel)
 	})
-
-	r.Run()
 }
