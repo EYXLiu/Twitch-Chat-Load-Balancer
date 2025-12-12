@@ -26,6 +26,6 @@ func main() {
 			return
 		}
 
-		log.Println(event.Channel)
+		log.Println(event.Message)
 	})
 }

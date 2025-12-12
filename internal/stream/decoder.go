@@ -28,7 +28,7 @@ func DecodeIRCMessage(raw string) (*ChatEvent, error) {
 	if len(msgParts) < 3 {
 		return nil, errors.New("no message found")
 	}
-	message := msgParts[2]
+	message := strings.TrimSpace(msgParts[2])
 
 	channelParts := strings.Split(raw, "PRIVMSG #")
 	if len(channelParts) < 2 {
