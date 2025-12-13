@@ -29,3 +29,10 @@ func (c *Client) Join(channel string) error {
 	c.send("JOIN #" + channel)
 	return nil
 }
+
+func (c *Client) Close() error {
+	if c.conn != nil {
+		return c.conn.Close()
+	}
+	return nil
+}
