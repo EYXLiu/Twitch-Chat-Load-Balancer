@@ -1,8 +1,6 @@
 package twitch
 
 import (
-	"log"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -30,15 +28,4 @@ func (c *Client) Join(channel string) error {
 	c.send("NICK justinfan12345")
 	c.send("JOIN #" + channel)
 	return nil
-}
-
-func (c *Client) Listen(onMessage func(string)) {
-	for {
-		_, msg, err := c.conn.ReadMessage()
-		if err != nil {
-			log.Println("twitch read error:", err)
-			return
-		}
-		onMessage(string(msg))
-	}
 }

@@ -6,13 +6,6 @@ import (
 	"time"
 )
 
-type ChatEvent struct {
-	Channel   string
-	User      string
-	Message   string
-	Timestamp time.Time
-}
-
 func DecodeIRCMessage(raw string) (*ChatEvent, error) {
 	if !strings.Contains(raw, "PRIVMSG") {
 		return nil, errors.New("not a chat message")
