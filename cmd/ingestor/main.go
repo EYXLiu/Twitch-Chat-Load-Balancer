@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"tc/internal/bus"
 	"tc/internal/config"
+	"tc/internal/metrics"
 	"tc/internal/stream"
 	"tc/internal/twitch"
 
@@ -20,18 +21,34 @@ func main() {
 	client, _ := twitch.Connect()
 	client.Join(cfg.TwitchChannel)
 
+	msgQueue := make(chan *stream.ChatEvent, 1000)
+
 	rdb := redis.NewClient(&redis.Options{
 		Addr: cfg.Redis,
 	})
 
 	producer := bus.Producer_Init(rdb)
 
+	counter := metrics.Counter_Init()
+
+	go func() {
+		for event := range msgQueue {
+			producer.Publish(event)
+		}
+	}()
+
 	go client.Listen(func(raw string) {
 		event, err := stream.DecodeIRCMessage(raw)
 		if err != nil {
 			return
 		}
-		producer.Publish(event)
+
+		select {
+		case msgQueue <- event:
+		default:
+			counter.Inc()
+			log.Println("Warning, dropping messages")
+		}
 	})
 
 	ctx, stop := signal.NotifyContext(
@@ -43,5 +60,7 @@ func main() {
 
 	<-ctx.Done()
 	log.Println("shutting down...")
+	close(msgQueue)
+	log.Printf("Dropped %d messages\n", counter.Get())
 	client.Close()
 }
