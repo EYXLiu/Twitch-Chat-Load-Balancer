@@ -12,10 +12,8 @@ type RedisCache struct {
 	ctx    context.Context
 }
 
-func RedisCache_Init(addr string) *RedisCache {
-	rdb := redis.NewClient(&redis.Options{
-		Addr: addr,
-	})
+func RedisCache_Init(rdb *redis.Client) *RedisCache {
+
 	return &RedisCache{
 		client: rdb,
 		ctx:    context.Background(),

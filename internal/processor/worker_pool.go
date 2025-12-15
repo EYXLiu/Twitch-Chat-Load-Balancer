@@ -37,7 +37,14 @@ func (p *WorkerPool) Start() {
 }
 
 func (p *WorkerPool) Submit(event *stream.ChatEvent) {
-	p.input <- event
+	select {
+	case p.input <- event:
+		break
+	default:
+		<-p.input
+		p.input <- event
+		log.Println("Error: worker pool full")
+	}
 }
 
 func (p *WorkerPool) worker(id int) {
