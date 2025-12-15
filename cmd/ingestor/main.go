@@ -8,16 +8,21 @@ import (
 	"syscall"
 	"tc/internal/bus"
 	"tc/internal/config"
+	"tc/internal/handlers"
 	"tc/internal/metrics"
 	"tc/internal/twitch"
 	"tc/internal/worker"
+	"tc/internal/ws"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
 
 func main() {
 	cfg := config.Load()
+
+	r := gin.Default()
 
 	client, _ := twitch.Connect()
 	client.Join(cfg.TwitchChannel)
@@ -28,7 +33,10 @@ func main() {
 		Addr: cfg.Redis,
 	})
 
-	producer := bus.Producer_Init(rdb)
+	hub := ws.Hub_Init()
+	go hub.Run()
+
+	producer := bus.Producer_Init(rdb, hub)
 	counter := metrics.Counter_Init()
 
 	var workers []*worker.Worker
@@ -80,6 +88,16 @@ func main() {
 			log.Println("Warning, dropping messages")
 		}
 	})
+
+	handlers.AdminStatsHandler(r, counter, &workers, msgQueue)
+	handlers.HealthHandler(r)
+	handlers.WebsocketHandler(r, hub)
+
+	go func() {
+		if err := r.Run(":8080"); err != nil {
+			log.Fatalf("Gin server failed: %v", err)
+		}
+	}()
 
 	ctx, stop := signal.NotifyContext(
 		context.Background(),

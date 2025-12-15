@@ -3,8 +3,8 @@ package bus
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"tc/internal/stream"
+	"tc/internal/ws"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -12,12 +12,14 @@ import (
 type Producer struct {
 	rdb *redis.Client
 	ctx context.Context
+	hub *ws.Hub
 }
 
-func Producer_Init(rdb *redis.Client) *Producer {
+func Producer_Init(rdb *redis.Client, hub *ws.Hub) *Producer {
 	return &Producer{
 		rdb: rdb,
 		ctx: context.Background(),
+		hub: hub,
 	}
 }
 
@@ -27,7 +29,8 @@ func (p *Producer) Publish(event *stream.ChatEvent) error {
 		return err
 	}
 
-	log.Println(event.User, ":", event.Message)
+	msg := event.User + ": " + event.Message
+	p.hub.Broadcast <- []byte(msg)
 
 	return p.rdb.XAdd(p.ctx, &redis.XAddArgs{
 		Stream: "twitch:events",

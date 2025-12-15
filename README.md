@@ -2,7 +2,7 @@
 
 ## How to run
 `export TWITCH_CHANNEL={channel}`  
-`export REDIS={redis endpoint}`  
+`export REDIS={redis endpoint}` (normally localhost:6379)  
 `make`
 
 ## Redis (make clean)
