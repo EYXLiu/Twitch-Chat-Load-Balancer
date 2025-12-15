@@ -12,6 +12,7 @@ export TWITCH_CHANNEL
 export REDIS
 
 run:
+	@echo "reading $$TWITCH_CHANNEL chat"
 	@echo "Starting redis consumer group"
 	go run ./cmd/init || true
 	@echo "Starting ingestor"

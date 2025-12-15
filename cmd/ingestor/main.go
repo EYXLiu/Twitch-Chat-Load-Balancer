@@ -9,8 +9,9 @@ import (
 	"tc/internal/bus"
 	"tc/internal/config"
 	"tc/internal/metrics"
-	"tc/internal/stream"
 	"tc/internal/twitch"
+	"tc/internal/worker"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -21,30 +22,59 @@ func main() {
 	client, _ := twitch.Connect()
 	client.Join(cfg.TwitchChannel)
 
-	msgQueue := make(chan *stream.ChatEvent, 1000)
+	msgQueue := make(chan string, 1000)
 
 	rdb := redis.NewClient(&redis.Options{
 		Addr: cfg.Redis,
 	})
 
 	producer := bus.Producer_Init(rdb)
-
 	counter := metrics.Counter_Init()
 
+	var workers []*worker.Worker
+	done := make(chan int)
+	maxWorkers := 5
+	queueIncrement := 0.2
+	idleTimeout := 5 * time.Second
+
+	w := &worker.Worker{Id: 0, Quit: make(chan struct{})}
+	workers = append(workers, w)
+	go worker.RunWorker(0, msgQueue, producer, idleTimeout, done)
+
 	go func() {
-		for event := range msgQueue {
-			producer.Publish(event)
+		ticker := time.NewTicker(500 * time.Millisecond)
+		defer ticker.Stop()
+
+		nextWorkerID := len(workers)
+
+		for {
+			select {
+			case <-ticker.C:
+				load := float64(len(msgQueue)) / float64(cap(msgQueue))
+				desiredWorkers := min(int(load/queueIncrement)+1, maxWorkers)
+
+				for len(workers) < desiredWorkers {
+					w := &worker.Worker{Id: nextWorkerID, Quit: make(chan struct{})}
+					workers = append(workers, w)
+					nextWorkerID++
+					go worker.RunWorker(w.Id, msgQueue, producer, idleTimeout, done)
+					log.Printf("Spawning worker %d", w.Id)
+				}
+			case workerId := <-done:
+				for i, w := range workers {
+					if w.Id == workerId {
+						workers = append(workers[:i], workers[i+1:]...)
+						log.Printf("Worker %d terminated", workerId)
+						break
+					}
+				}
+			}
 		}
 	}()
 
 	go client.Listen(func(raw string) {
-		event, err := stream.DecodeIRCMessage(raw)
-		if err != nil {
-			return
-		}
-
 		select {
-		case msgQueue <- event:
+		case msgQueue <- raw:
 		default:
 			counter.Inc()
 			log.Println("Warning, dropping messages")
