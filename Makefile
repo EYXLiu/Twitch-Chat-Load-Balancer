@@ -4,9 +4,7 @@ ifndef TWITCH_CHANNEL
 $(error TWITCH_CHANNEL is not set)
 endif
 
-ifndef REDIS
-$(error REDIS is not set)
-endif
+REDIS ?= localhost:6379
 
 export TWITCH_CHANNEL
 export REDIS
