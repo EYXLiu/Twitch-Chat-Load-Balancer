@@ -24,9 +24,18 @@ func (c *Client) send(msg string) {
 	c.conn.WriteMessage(websocket.TextMessage, []byte(msg))
 }
 
-func (c *Client) Join(channel string) error {
+func (c *Client) Auth() error {
 	c.send("NICK justinfan12345")
+	return nil
+}
+
+func (c *Client) Join(channel string) error {
 	c.send("JOIN #" + channel)
+	return nil
+}
+
+func (c *Client) Send(message string) error {
+	c.send(message)
 	return nil
 }
 

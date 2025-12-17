@@ -22,6 +22,6 @@ func RedisCache_Init(rdb *redis.Client) *RedisCache {
 
 func (r *RedisCache) PushMessage(event *stream.ChatEvent) error {
 	key := "twitch:messages"
-	value := event.User + ": " + event.Message
+	value := "[" + event.Channel + "]" + event.User + ": " + event.Message
 	return r.client.RPush(r.ctx, key, value).Err()
 }

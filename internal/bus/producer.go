@@ -29,7 +29,7 @@ func (p *Producer) Publish(event *stream.ChatEvent) error {
 		return err
 	}
 
-	msg := event.User + ": " + event.Message
+	msg := "[" + event.Channel + "]" + event.User + ": " + event.Message
 	p.hub.Broadcast <- []byte(msg)
 
 	return p.rdb.XAdd(p.ctx, &redis.XAddArgs{

@@ -25,7 +25,10 @@ func main() {
 	r := gin.Default()
 
 	client, _ := twitch.Connect()
-	client.Join(cfg.TwitchChannel)
+	client.Auth()
+	for _, ch := range cfg.TwitchChannels {
+		client.Join(ch)
+	}
 
 	msgQueue := make(chan string, 1000)
 
@@ -91,7 +94,7 @@ func main() {
 
 	handlers.AdminStatsHandler(r, counter, &workers, msgQueue)
 	handlers.HealthHandler(r)
-	handlers.WebsocketHandler(r, hub)
+	handlers.WebsocketHandler(r, hub, client)
 
 	go func() {
 		if err := r.Run(":8080"); err != nil {

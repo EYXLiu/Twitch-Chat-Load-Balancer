@@ -2,16 +2,23 @@ package config
 
 import (
 	"os"
+	"strings"
 )
 
 type Config struct {
-	TwitchChannel string
-	Redis         string
+	TwitchChannels []string
+	Redis          string
 }
 
 func Load() Config {
+	tcs := strings.Split(os.Getenv("TWITCH_CHANNELS"), ",")
+
+	for i := range tcs {
+		tcs[i] = strings.TrimSpace(tcs[i])
+	}
+
 	return Config{
-		TwitchChannel: os.Getenv("TWITCH_CHANNEL"),
-		Redis:         os.Getenv("REDIS"),
+		TwitchChannels: tcs,
+		Redis:          os.Getenv("REDIS"),
 	}
 }
