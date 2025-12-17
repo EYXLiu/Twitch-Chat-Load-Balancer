@@ -1,7 +1,7 @@
 # Twitch Chat Load Balancer
 
 ## How to run
-`export TWITCH_CHANNEL={channel}`  
+`export TWITCH_CHANNEL={channel1},{channel2},{channel3},...`  
 `export REDIS={redis endpoint}` (normally localhost:6379)  
 `make`
 
