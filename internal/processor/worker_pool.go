@@ -1,3 +1,7 @@
+// worker pool
+// 	worker class that takes an event and pushes it to the atomic classes
+//	calls counter, window, and cache
+
 package processor
 
 import (

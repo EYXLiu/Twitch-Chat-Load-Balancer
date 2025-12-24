@@ -1,3 +1,6 @@
+// bus producer
+//	receives an event and publishes it to a redis stream
+
 package bus
 
 import (

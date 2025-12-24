@@ -1,3 +1,6 @@
+// twitch listener
+//	reads from twitch chat websocket
+
 package twitch
 
 import "log"

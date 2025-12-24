@@ -1,3 +1,6 @@
+// init main
+//	initializes redis and attaches it to the bus
+
 package main
 
 import (

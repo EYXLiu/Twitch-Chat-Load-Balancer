@@ -1,3 +1,7 @@
+// twitch client
+//	connects to twitch (+ auth, join, all admin stuff) and sends messages
+// 	attaches the twitch websocket connection to the Client structure
+
 package twitch
 
 import (
@@ -25,6 +29,7 @@ func (c *Client) send(msg string) {
 }
 
 func (c *Client) Auth() error {
+	c.Send("CAP REQ :twitch.tv/commands twitch.tv/tags")
 	c.send("NICK justinfan12345")
 	return nil
 }

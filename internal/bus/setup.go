@@ -1,3 +1,7 @@
+// bus init
+//	sets up the twitch:events group
+//
+
 package bus
 
 import (

@@ -1,3 +1,8 @@
+// ingestor main
+//	sets up the pubsub 
+//	sets up dynamic scaling for workers and notifies when messages are being dropped
+// 	sets up admin handlers as well 
+
 package main
 
 import (

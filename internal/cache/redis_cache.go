@@ -1,3 +1,7 @@
+// redis cache functions
+//	initialize redis
+//	push a twitch message into twitch:messages
+
 package cache
 
 import (
@@ -13,7 +17,6 @@ type RedisCache struct {
 }
 
 func RedisCache_Init(rdb *redis.Client) *RedisCache {
-
 	return &RedisCache{
 		client: rdb,
 		ctx:    context.Background(),

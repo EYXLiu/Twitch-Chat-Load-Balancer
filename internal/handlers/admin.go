@@ -1,3 +1,7 @@
+// admin handler
+//	/admin/stats endpoint
+// 	returns json of below
+
 package handlers
 
 import (

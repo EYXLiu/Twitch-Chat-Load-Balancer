@@ -1,3 +1,6 @@
+// counter metric
+// 	atomic counter to increment and get the total
+
 package metrics
 
 import "sync/atomic"

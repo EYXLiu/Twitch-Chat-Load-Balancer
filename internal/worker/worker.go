@@ -1,3 +1,8 @@
+// worker
+// 	runs worker
+//	auto stops worker when idle for idleTimeout
+// 	publishes the decoded message to the producer bus
+
 package worker
 
 import (

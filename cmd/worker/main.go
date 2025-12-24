@@ -1,3 +1,9 @@
+// worker main
+// 	starts the main worker goroutine
+// 	sets up counter and window tracker
+//	attaches to the pubsub bus
+// 	prints every 5 seconds
+
 package main
 
 import (
@@ -37,6 +43,7 @@ func main() {
 	consumerName := fmt.Sprintf("%s-%d", hostname, os.Getpid())
 	consumer := bus.Consumer_Init(rdb, "workers", consumerName)
 
+//	function just submits the event to the pool 
 	go consumer.Start(func(event *stream.ChatEvent) {
 		pool.Submit(event)
 	})

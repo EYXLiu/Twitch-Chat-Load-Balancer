@@ -1,28 +1,35 @@
+// websocket hub for twitch
+//	sets up the websocket and broadcasts
+//	calls connection write message to twitch (eg. join, renick, send chat message)
+
 package ws
 
 import (
+	"encoding/json"
 	"sync"
+	"tc/internal/stream"
 	"tc/internal/twitch"
 
 	"github.com/gorilla/websocket"
 )
 
 type Client struct {
-	conn   *websocket.Conn
-	send   chan []byte
-	twitch *twitch.Client
+	conn     *websocket.Conn
+	send     chan []byte
+	twitch   *twitch.Client
+	interest map[stream.EventType]bool
 }
 
 type Hub struct {
 	clients   map[*Client]bool
-	Broadcast chan []byte
+	Broadcast chan stream.Event
 	lock      sync.Mutex
 }
 
 func Hub_Init() *Hub {
 	return &Hub{
 		clients:   make(map[*Client]bool),
-		Broadcast: make(chan []byte),
+		Broadcast: make(chan stream.Event),
 	}
 }
 
@@ -30,8 +37,13 @@ func (h *Hub) Run() {
 	for msg := range h.Broadcast {
 		h.lock.Lock()
 		for c := range h.clients {
+			if !c.interest[msg.Type] {
+				continue
+			}
+
+			data, _ := json.Marshal(msg)
 			select {
-			case c.send <- msg:
+			case c.send <- data:
 			default:
 				close(c.send)
 				delete(h.clients, c)

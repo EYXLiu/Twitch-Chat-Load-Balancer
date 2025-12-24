@@ -1,3 +1,7 @@
+// config
+// 	read config from environment
+//	load into Config struct
+
 package config
 
 import (

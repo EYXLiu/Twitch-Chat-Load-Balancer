@@ -1,3 +1,6 @@
+// bus consumer
+//	reads from a redis stream and calls a given function (handler) on each event
+
 package bus
 
 import (

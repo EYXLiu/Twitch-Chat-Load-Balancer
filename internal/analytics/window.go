@@ -1,3 +1,6 @@
+// analytics (5 second window)
+//	creates a window for the last 5 seconds and returns analytics (total messages)
+
 package analytics
 
 import (
