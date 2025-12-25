@@ -57,6 +57,7 @@ func (p *WorkerPool) Submit(event *stream.Event) {
 }
 
 func (p *WorkerPool) worker(id int) {
+	_ = id
 	defer p.wg.Done()
 	for event := range p.input {
 		switch event.Type {
@@ -69,8 +70,6 @@ func (p *WorkerPool) worker(id int) {
 			p.counter.Inc()
 			p.window.Add(&chat)
 			p.cache.PushMessage(&chat)
-			_ = id
-			_ = event
 		case stream.EventSystem:
 			var notif stream.UserNoticeEvent
 			if err := json.Unmarshal(event.Data, &notif); err != nil {
