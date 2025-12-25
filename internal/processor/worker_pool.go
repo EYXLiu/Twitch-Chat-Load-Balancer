@@ -1,10 +1,15 @@
 // worker pool
 // 	worker class that takes an event and pushes it to the atomic classes
 //	calls counter, window, and cache
+//	Submit
+//		pushes a message into the workerpool input channel for workers to read
+// 	worker
+//		handles the messages and pushes to cache/window/counter
 
 package processor
 
 import (
+	"encoding/json"
 	"log"
 	"sync"
 	"tc/internal/analytics"
@@ -15,7 +20,7 @@ import (
 
 type WorkerPool struct {
 	workers int
-	input   chan *stream.ChatEvent
+	input   chan *stream.Event
 	counter *metrics.Counter
 	window  *analytics.Window
 	cache   *cache.RedisCache
@@ -25,7 +30,7 @@ type WorkerPool struct {
 func WorkerPool_Init(workers int, counter *metrics.Counter, window *analytics.Window, cache *cache.RedisCache) *WorkerPool {
 	return &WorkerPool{
 		workers: workers,
-		input:   make(chan *stream.ChatEvent, 1000),
+		input:   make(chan *stream.Event, 1000),
 		counter: counter,
 		window:  window,
 		cache:   cache,
@@ -40,7 +45,7 @@ func (p *WorkerPool) Start() {
 	log.Printf("Started %d workers\n", p.workers)
 }
 
-func (p *WorkerPool) Submit(event *stream.ChatEvent) {
+func (p *WorkerPool) Submit(event *stream.Event) {
 	select {
 	case p.input <- event:
 		break
@@ -54,11 +59,28 @@ func (p *WorkerPool) Submit(event *stream.ChatEvent) {
 func (p *WorkerPool) worker(id int) {
 	defer p.wg.Done()
 	for event := range p.input {
-		p.counter.Inc()
-		p.window.Add(event)
-		p.cache.PushMessage(event)
-		_ = id
-		_ = event
+		switch event.Type {
+		case stream.EventChat:
+			var chat stream.ChatEvent
+			if err := json.Unmarshal(event.Data, &chat); err != nil {
+				log.Printf("worker %d: bad chat event: %v", id, err)
+				return
+			}
+			p.counter.Inc()
+			p.window.Add(&chat)
+			p.cache.PushMessage(&chat)
+			_ = id
+			_ = event
+		case stream.EventSystem:
+			var notif stream.UserNoticeEvent
+			if err := json.Unmarshal(event.Data, &notif); err != nil {
+				log.Printf("worker %d: bad system event: %v", id, err)
+				return
+			}
+			_ = notif
+		default:
+
+		}
 	}
 }
 

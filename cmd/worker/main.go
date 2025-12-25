@@ -43,8 +43,8 @@ func main() {
 	consumerName := fmt.Sprintf("%s-%d", hostname, os.Getpid())
 	consumer := bus.Consumer_Init(rdb, "workers", consumerName)
 
-//	function just submits the event to the pool 
-	go consumer.Start(func(event *stream.ChatEvent) {
+	//	function just submits the event to the pool
+	go consumer.Start(func(event *stream.Event) {
 		pool.Submit(event)
 	})
 

@@ -1,7 +1,7 @@
 // worker
-// 	runs worker
-//	auto stops worker when idle for idleTimeout
-// 	publishes the decoded message to the producer bus
+// 	RunWorker
+//		auto stops worker when idle for idleTimeout
+// 		publishes the decoded message to the producer bus
 
 package worker
 
@@ -27,7 +27,7 @@ func RunWorker(id int, msgQueue chan string, producer *bus.Producer, idleTimeout
 			if !ok {
 				return
 			}
-			event, err := stream.DecodeIRCMessage(raw)
+			event, err := stream.DecodeMessage(raw)
 			if err != nil {
 				continue
 			}

@@ -1,6 +1,12 @@
+// event
+//	event types and structs 
+
 package stream
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type EventType string
 
@@ -13,7 +19,7 @@ const (
 
 type Event struct {
 	Type EventType
-	Data any
+	Data json.RawMessage
 }
 
 type IRCMessage struct {
@@ -28,4 +34,13 @@ type ChatEvent struct {
 	User      string
 	Message   string
 	Timestamp time.Time
+}
+
+type UserNoticeEvent struct {
+	Channel    string
+	User       string
+	Message    string
+	NoticeType string
+	SystemMsg  string
+	Timestamp  time.Time
 }

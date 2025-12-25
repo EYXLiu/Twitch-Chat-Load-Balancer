@@ -1,6 +1,14 @@
 // websocket hub for twitch
 //	sets up the websocket and broadcasts
 //	calls connection write message to twitch (eg. join, renick, send chat message)
+//	Hub_Run
+//		sends the messages in the Broadcast Hub channel to each Send Client channel
+// 	Client_Run
+//		sends the message from the Send Client channel to the websocket connection
+//	Hub_AddClient
+//		adds clients with the requested streamtypes as a Client struct
+//	Hub_ReadLoop
+//		reads messages from the websocket and sends them to twitch
 
 package ws
 
@@ -22,14 +30,14 @@ type Client struct {
 
 type Hub struct {
 	clients   map[*Client]bool
-	Broadcast chan stream.Event
+	Broadcast chan *stream.Event
 	lock      sync.Mutex
 }
 
 func Hub_Init() *Hub {
 	return &Hub{
 		clients:   make(map[*Client]bool),
-		Broadcast: make(chan stream.Event),
+		Broadcast: make(chan *stream.Event),
 	}
 }
 
@@ -63,11 +71,16 @@ func (c *Client) Run(h *Hub) {
 	}
 }
 
-func (h *Hub) AddClient(conn *websocket.Conn, twitch *twitch.Client) {
+func (h *Hub) AddClient(conn *websocket.Conn, twitch *twitch.Client, events []stream.EventType) {
 	client := &Client{
-		conn:   conn,
-		send:   make(chan []byte, 256),
-		twitch: twitch,
+		conn:     conn,
+		send:     make(chan []byte, 256),
+		twitch:   twitch,
+		interest: make(map[stream.EventType]bool),
+	}
+
+	for _, e := range events {
+		client.interest[e] = true
 	}
 
 	h.lock.Lock()

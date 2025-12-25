@@ -6,6 +6,7 @@ package handlers
 
 import (
 	"net/http"
+	"tc/internal/stream"
 	"tc/internal/twitch"
 	"tc/internal/ws"
 
@@ -23,6 +24,13 @@ func WebsocketHandler(router *gin.Engine, hub *ws.Hub, client *twitch.Client) {
 		if err != nil {
 			return
 		}
-		hub.AddClient(conn, client)
+		hub.AddClient(conn, client, []stream.EventType{stream.EventChat})
+	})
+	router.GET("/server", func(c *gin.Context) {
+		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+		if err != nil {
+			return
+		}
+		hub.AddClient(conn, client, []stream.EventType{stream.EventUserNotice})
 	})
 }

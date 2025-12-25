@@ -26,14 +26,13 @@ func Producer_Init(rdb *redis.Client, hub *ws.Hub) *Producer {
 	}
 }
 
-func (p *Producer) Publish(event *stream.ChatEvent) error {
+func (p *Producer) Publish(event *stream.Event) error {
+	p.hub.Broadcast <- event
+
 	data, err := json.Marshal(event)
 	if err != nil {
 		return err
 	}
-
-	msg := "[" + event.Channel + "]" + event.User + ": " + event.Message
-	p.hub.Broadcast <- []byte(msg)
 
 	return p.rdb.XAdd(p.ctx, &redis.XAddArgs{
 		Stream: "twitch:events",
@@ -41,6 +40,7 @@ func (p *Producer) Publish(event *stream.ChatEvent) error {
 		Approx: true,
 		Values: map[string]interface{}{
 			"data": data,
+			"type": string(event.Type),
 		},
 	}).Err()
 }

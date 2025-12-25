@@ -28,7 +28,7 @@ func Consumer_Init(rdb *redis.Client, group, consumer string) *Consumer {
 	}
 }
 
-func (c *Consumer) Start(handler func(*stream.ChatEvent)) {
+func (c *Consumer) Start(handler func(*stream.Event)) {
 	for {
 		streams, err := c.rdb.XReadGroup(c.ctx, &redis.XReadGroupArgs{
 			Group:    c.group,
@@ -47,7 +47,7 @@ func (c *Consumer) Start(handler func(*stream.ChatEvent)) {
 			for _, msg := range s.Messages {
 				raw := msg.Values["data"].(string)
 
-				var event stream.ChatEvent
+				var event stream.Event
 				if err := json.Unmarshal([]byte(raw), &event); err != nil {
 					continue
 				}
