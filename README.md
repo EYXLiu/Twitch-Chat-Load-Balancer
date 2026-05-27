@@ -1,5 +1,5 @@
 # Twitch Chat Load Balancer
-**Tech Stack:** Go, Gin, Websockets, Multithreading, Twitch API, Redis, Make
+**Tech Stack:** Go, Gin, Websockets, Multithreading, Twitch API, Redis, Make  
 Scalable multi-threaded Twitch Chat ingestion and processing system to learn load balancing and scaling in a high-throughput streaming environment  
 The system uses Twitch chat traffic to simulate real-world load patterns similar to production-scale streaming architectures  
 It has been stress-tested with ~30,000 concurrent users along with continuous streams of gifted subscriptions and bits  
